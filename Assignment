@@ -1,0 +1,14 @@
+# find_day_of_the_week:
+from datetime import datetime
+
+def find_day_of_week(year,month,day):
+    
+    date = datetime(year,month,day)
+    return date.strftime("%A")
+
+year = int(input("Enter Year (YYYY): "))
+month = int(input("Enter Month (MM): "))
+day = int(input("Enter day (DD): "))
+
+day_of_the_week = find_day_of_week(year,month,day)
+print("The day of week:",day_of_the_week)
