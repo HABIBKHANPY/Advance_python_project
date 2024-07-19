@@ -1,22 +1,12 @@
 from datetime import datetime
 import random
-import pandas as pd
 import smtplib
+import pandas as pd
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-GMAIL_USER = "hk898423@gmail.com"
+GMAIL_USER = ""
 GMAIL_PASSWORD = ""
-CSV_FILE = "receiver.csv"
-
-quotes = [
-    "The only way to do great work is to love what you do. - Steve Jobs",
-    "Believe you can and you're halfway there. - Theodore Roosevelt",
-    "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
-    "It does not matter how slowly you go as long as you do not stop. - Confucius",
-    "The best way to predict the future is to create it. - Abraham Lincoln"
-]
-
 def send_email(to_address, subject, message):
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
@@ -28,22 +18,29 @@ def send_email(to_address, subject, message):
     except Exception as e:
         print(f"Failed to send email to {to_address}: {e}")
 
-def get_receivers_from_csv(csv_file):
+def check_and_send_quotes():
     try:
-        df = pd.read_csv(csv_file)
-        return df['email'].tolist()
+        now = datetime.now()
+        weekday = now.weekday()
+
+        if weekday == 0:
+            quotes = pd.read_csv("quotes.csv")
+            if quotes.empty:
+                print("Error: quotes.csv is empty or no quotes found.")
+                return
+            
+            quote = random.choice(quotes['quote'])
+
+            emails = pd.read_csv("emails.csv")
+            if emails.empty:
+                print("Error: emails.csv is empty or no emails found.")
+                return
+
+            for index, row in emails.iterrows():
+                to_address = row['email']
+                subject = "Your Inspirational Quote"
+                message = f"Hello,\n\nHere's your quote of the day:\n\n{quote}\n\nBest regards,\nYour Daily Quote Service"
+                send_email(to_address, subject, message)
+
     except Exception as e:
-        print(f"Failed to read receivers from {csv_file}: {e}")
-        return []
-
-today = datetime.today()
-weekday = today.weekday()
-if weekday == 0:
-    selected_quote = random.choice(quotes)
-    subject = "Monday Motivation"
-    message = f"Hello,\n\nHere's your quote for today:\n\n{selected_quote}"
-
-    receivers = get_receivers_from_csv(CSV_FILE)
-    
-    for receiver in receivers:
-        send_email(receiver, subject, message)
+        print(f"Failed to send daily quotes: {e}")
